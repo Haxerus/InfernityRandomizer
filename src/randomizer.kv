@@ -1,6 +1,6 @@
 #:kivy 1.1.0
 
-<YGORandomizer>:
+<InfernityRandomizer>:
     canvas:
         Rectangle:
             source: 'res/bg.png'
@@ -12,74 +12,120 @@
             pos: 225, 150
             size: 340, 300
 
-    FloatLayout:
-        size: root.size
-        pos: root.pos
+    BoxLayout:
+        id: menu
+        orientation: "vertical"
+        size_hint: None, None  # Disable automatic scaling
+        size: self.minimum_size  # Dynamically size to fit children
+        spacing: '40dp'
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}  # Center the menu in the screen
 
-        BoxLayout:
-            id: menu
-            orientation: "vertical"
-            size_hint: None, None  # Disable automatic scaling
-            size: self.minimum_size  # Dynamically size to fit children
-            spacing: '40dp'
-            pos_hint: {"center_x": 0.5, "center_y": 0.5}  # Center the menu in the screen
+        Label:
+            id: "title"
+            text: "Infernity Randomizer"
+
+        GridLayout:
+            cols: 2
+            size_hint_y: None  # Disable size hints for manual sizing
+            height: self.minimum_height  # Fit height to children
+            row_default_height: '40dp'  # Ensure consistent row height
+            row_force_default: True
+            pos_hint: {"center_x": 0.5}  # Center horizontally
 
             Label:
-                id: "title"
-                text: "Infernity Randomizer"
+                text: "Randomize packs:"
+                size_hint_x: None
+                width: 250  # Fixed width for labels
+                halign: 'left'  # Align text to the left
+            CheckBox:
+                id: pack_checkbox_1
+                size_hint_x: None
+                active: True
+                width: 20  # Fixed width for checkboxes
+            Label:
+                text: "Randomize starting deck:"
+                size_hint_x: None
+                width: 250
+                halign: 'left'  # Align text to the left
+            CheckBox:
+                id: pack_checkbox_2
+                size_hint_x: None
+                active: True
+                width: 20
+            Label:
+                text: "Randomize structure decks:"
+                size_hint_x: None
+                width: 250
+                halign: 'left'  # Align text to the left
+            CheckBox:
+                id: pack_checkbox_3
+                size_hint_x: None
+                active: True
+                width: 20
 
-            GridLayout:
-                cols: 2
-                size_hint_y: None  # Disable size hints for manual sizing
-                height: self.minimum_height  # Fit height to children
-                row_default_height: '40dp'  # Ensure consistent row height
-                row_force_default: True
-                pos_hint: {"center_x": 0.5}  # Center horizontally
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: None, None  # Disable automatic scaling
+            width: 300  # Set a reasonable fixed width
+            height: '50dp'  # Explicit height for buttons
+            spacing: '10dp'  # Add spacing between buttons
+            pos_hint: {"center_x": 0.5}  # Center horizontally
 
-                Label:
-                    text: "Randomize packs:"
-                    size_hint_x: None
-                    width: 250  # Fixed width for labels
-                    halign: 'left'  # Align text to the left
-                CheckBox:
-                    id: pack_checkbox_1
-                    size_hint_x: None
-                    active: True
-                    width: 20  # Fixed width for checkboxes
-                Label:
-                    text: "Randomize starting deck:"
-                    size_hint_x: None
-                    width: 250
-                    halign: 'left'  # Align text to the left
-                CheckBox:
-                    id: pack_checkbox_2
-                    size_hint_x: None
-                    active: True
-                    width: 20
-                Label:
-                    text: "Randomize structure decks:"
-                    size_hint_x: None
-                    width: 250
-                    halign: 'left'  # Align text to the left
-                CheckBox:
-                    id: pack_checkbox_3
-                    size_hint_x: None
-                    active: True
-                    width: 20
+            Button:
+                text: "Load ROM"
+                size_hint_x: None
+                width: 140  # Set fixed width for each button
+                on_release: root.show_load()
+            Button:
+                text: "Save ROM"
+                size_hint_x: None
+                width: 140
+                on_release: root.show_save()
 
-            BoxLayout:
-                orientation: "horizontal"
-                size_hint: None, None  # Disable automatic scaling
-                width: 300  # Set a reasonable fixed width
-                height: '50dp'  # Explicit height for buttons
-                spacing: '10dp'  # Add spacing between buttons
-                pos_hint: {"center_x": 0.5}  # Center horizontally
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            path: root.default_path
+            id: filechooser
 
-                Button:
-                    text: "Load ROM"
-                    size_hint_x: None
-                    width: 140  # Set fixed width for each button
-                Button:
-                    text: "Save ROM"
-                    size_hint_x: None
-                    width: 140
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<SaveDialog>:
+    text_input: text_input
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            path: root.default_path
+            id: filechooser
+            on_selection: text_input.text = self.selection and self.selection[0] or ''
+
+        TextInput:
+            id: text_input
+            size_hint_y: None
+            height: 30
+            multiline: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Save"
+                on_release: root.save(filechooser.path, text_input.text)
