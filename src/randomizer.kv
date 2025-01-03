@@ -1,28 +1,36 @@
 #:kivy 1.1.0
 
 <InfernityRandomizer>:
-    canvas:
+    seed_input: seed
+    pack_chk: chk_1
+    start_chk: chk_2
+    sd_chk: chk_3
+
+    canvas.before:
         Rectangle:
             source: 'res/bg.png'
             pos: self.pos
             size: self.size
-        Color:
-            rgba: 0, 0, 0, 0.8
-        Rectangle:
-            pos: 225, 150
-            size: 340, 300
 
     BoxLayout:
         id: menu
         orientation: "vertical"
         size_hint: None, None  # Disable automatic scaling
         size: self.minimum_size  # Dynamically size to fit children
-        spacing: '40dp'
+        spacing: '25dp'
         pos_hint: {"center_x": 0.5, "center_y": 0.5}  # Center the menu in the screen
+        padding: '25dp'
+
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.8
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
         Label:
-            id: "title"
-            text: "Infernity Randomizer"
+            id: title
+            text: "Yu-Gi-Oh! WC 2011 Randomizer"
 
         GridLayout:
             cols: 2
@@ -38,7 +46,8 @@
                 width: 250  # Fixed width for labels
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: pack_checkbox_1
+                id: chk_1
+                disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
                 width: 20  # Fixed width for checkboxes
@@ -48,7 +57,8 @@
                 width: 250
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: pack_checkbox_2
+                id: chk_2
+                disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
                 width: 20
@@ -58,10 +68,29 @@
                 width: 250
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: pack_checkbox_3
+                id: chk_3
+                disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
                 width: 20
+        
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: None, None
+            width: 300
+            height: '30dp'
+            spacing: '10dp'
+            pos_hint: {"center_x": 0.5}
+
+            TextInput:
+                id: seed
+                hint_text: "Seed"
+            
+            Button:
+                text: "Random Seed"
+                size_hint_x: None
+                width: 100
+                on_release: root.random_seed()
 
         BoxLayout:
             orientation: "horizontal"
@@ -74,12 +103,13 @@
             Button:
                 text: "Load ROM"
                 size_hint_x: None
-                width: 140  # Set fixed width for each button
+                width: 145  # Set fixed width for each button
                 on_release: root.show_load()
             Button:
                 text: "Save ROM"
+                disabled: False if root.file_loaded else True
                 size_hint_x: None
-                width: 140
+                width: 145
                 on_release: root.show_save()
 
 <LoadDialog>:

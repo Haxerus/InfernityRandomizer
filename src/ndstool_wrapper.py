@@ -1,4 +1,5 @@
 import subprocess
+import shutil
 from pathlib import Path
 
 class NdsToolWrapper():
@@ -38,3 +39,6 @@ class NdsToolWrapper():
                 "-t", "ndstool\\temp\\banner.bin",
                 "-h", "ndstool\\temp\\header.bin"]
         subprocess.run(args)
+
+        if temp_dir.exists() and temp_dir.is_dir():
+            shutil.rmtree(temp_dir)

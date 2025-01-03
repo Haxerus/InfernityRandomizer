@@ -4,8 +4,13 @@ from pac_file import PacFile
 class PacData():
     def __init__(self, pac_bytes):
         self.pac_bytes = pac_bytes
-        self.data_offset = -1
+        self.data_offset = 0
         self.file_structure = dict()
+
+        sectors = self.__divide_sectors(self.pac_bytes)
+        file_names = self.__read_file_names(sectors[0])
+        pac_files = self.__get_file_structure(sectors[1])
+        self.__fill_file_structure(file_names, pac_files)
 
     def get_file_names(self):
         return self.file_structure.keys()
@@ -29,13 +34,14 @@ class PacData():
             if pac_file_space > new_file_size:
                 new_file_size = pac_file_space
         
-        new_pac_bytes = self.pac_bytes[:new_file_size]
+        new_pac_bytes = bytearray(self.pac_bytes[:new_file_size])
 
         for pac_file in self.file_structure.values():
-            for i in range(len(pac_file.get_data())):
-                new_pac_bytes[pac_file.get_address() + i] = pac_file.get_data()[i]
+            start = pac_file.get_address()
+            end = pac_file.get_address() + len(pac_file.get_data())
+            new_pac_bytes[start:end] = pac_file.get_data()
         
-        return new_pac_bytes
+        return bytes(new_pac_bytes)
 
     def __divide_sectors(self, file_data):
         header = bytes()
@@ -80,7 +86,7 @@ class PacData():
             current_byte = file_data[i]
 
             if current_byte in line_break_bytes:
-                word_bytes = file_data[start, i]
+                word_bytes = file_data[start:i]
                 words.append(word_bytes)
 
                 start = i + 2
@@ -90,7 +96,7 @@ class PacData():
         end = len(file_data) - 1
         while (file_data[end - 3] & 0xFF) == 0x00:
             end -= 1
-        words.add(file_data[start:end])
+        words.append(file_data[start:end])
 
         return [w for w in words if "." in w.decode("latin_1")]
 
@@ -100,7 +106,7 @@ class PacData():
         for i in range(8, len(data), 8):
             data_slice =  data[i:i+8]
 
-            file_size, address = struct.unpack("<ii", data_slice)
+            address, file_size = struct.unpack("<ii", data_slice)
             if (file_size > 0):
                 files.append(PacFile(file_size, self.data_offset + address))
         
@@ -116,11 +122,11 @@ class PacData():
         for i in range(len(file_names)):
             name = file_names[i].decode("latin_1")
             file = all_files[i]
-            file.setFileName(name)
+            file.set_file_name(name)
 
-            start = file.getAddress()
-            end = file.getAddresss() + file.getSize()
+            start = file.get_address()
+            end = file.get_address() + file.get_file_size()
 
-            file.setData(self.pac_bytes, start, end)
+            file.set_data(self.pac_bytes[start:end])
 
             self.file_structure[name] = file
