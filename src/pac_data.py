@@ -30,16 +30,39 @@ class PacData():
         new_file_size = 0
 
         for pac_file in self.file_structure.values():
-            pac_file_space = pac_file.get_address() + pac_file.get_file_size()
+            # pac_file_space = pac_file.get_address() + pac_file.get_file_size()
+            pac_file_space = pac_file.get_address() + len(pac_file.get_data())
             if pac_file_space > new_file_size:
                 new_file_size = pac_file_space
         
-        new_pac_bytes = bytearray(self.pac_bytes[:new_file_size])
+        new_pac_bytes = bytearray(new_file_size)
+        file_end = min(new_file_size, len(self.pac_bytes))
+        new_pac_bytes[:file_end] = self.pac_bytes[:file_end]
+        new_header = bytearray(self.pac_bytes[self.header_start:self.header_end])
 
         for pac_file in self.file_structure.values():
+            new_size = len(pac_file.get_data())
+            if new_size != pac_file.get_file_size():
+                address = pac_file.get_address() - self.data_offset
+                for i in range(8, len(new_header), 8):
+                    data_slice = new_header[i:i+8]
+                    curr_addr, curr_size = struct.unpack("<II", data_slice)
+                    if curr_size == 0:
+                        continue
+                    if curr_addr == address:
+                        new_data = struct.pack("<II", address, new_size)
+                        new_header[i:i+8] = new_data
+                
+                if new_size < pac_file.get_file_size():
+                    start = pac_file.get_address()
+                    end = pac_file.get_address() + pac_file.get_file_size()
+                    new_pac_bytes[start:end] = b'\x00' * (end - start)
+
             start = pac_file.get_address()
             end = pac_file.get_address() + len(pac_file.get_data())
             new_pac_bytes[start:end] = pac_file.get_data()
+        
+        new_pac_bytes[self.header_start:self.header_end] = new_header
         
         return bytes(new_pac_bytes)
 
@@ -51,15 +74,16 @@ class PacData():
         while i < len(file_data):
             if (file_data[i] & 0xFF) == 0xFF and (file_data[i+1] & 0xFF) == 0xFF:
                 i -= i % 16
-                header = file_data[:i]
+                file_names = file_data[:i]
                 break
             i += 2
         
-        file_names_offset = i
+        self.header_start = i
         while i < len(file_data):
             current_line = file_data[i:i+8]
             if int.from_bytes(current_line) == 0:
-                file_names = file_data[file_names_offset:i]
+                self.header_end = i
+                header = file_data[self.header_start:self.header_end]
                 break
             i += 16
         
@@ -70,7 +94,7 @@ class PacData():
             i += 16
         
         self.data_offset = i
-        return [header, file_names]
+        return [file_names, header]
 
 
     def __read_file_names(self, header):
@@ -106,7 +130,7 @@ class PacData():
         for i in range(8, len(data), 8):
             data_slice =  data[i:i+8]
 
-            address, file_size = struct.unpack("<ii", data_slice)
+            address, file_size = struct.unpack("<II", data_slice)
             if (file_size > 0):
                 files.append(PacFile(file_size, self.data_offset + address))
         

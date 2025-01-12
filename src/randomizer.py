@@ -29,6 +29,9 @@ class Randomizer():
         
         if settings["structure_deck"]:
             self.__randomize_structure_decks()
+        
+        if settings["cpu_shuffle"]:
+            self.__shuffle_cpu_decks()
 
         self.__export_rom(output_path)
 
@@ -117,7 +120,8 @@ class Randomizer():
             print(deck_file)
             deck = self.deck_pac.get_file_bytes(deck_file)
 
-            extra_deck_size = 3 if deck_file == "sd_starter10.ydc" else 0
+            # extra_deck_size = 3 if deck_file == "sd_starter10.ydc" else 0
+            extra_deck_size = random.randint(4, 8)
             extra_deck_offset = header_offset + (main_deck_size * 2) + 4
             deck_size_bytes = extra_deck_offset + (extra_deck_size * 2) + 2
 
@@ -130,8 +134,6 @@ class Randomizer():
             self.__randomize_deck(self.main_pool, new_deck, main_deck_size, main_deck_offset)
             if extra_deck_size > 0:
                 self.__randomize_deck(self.extra_pool, new_deck, extra_deck_size, extra_deck_offset)
-
-            # TODO: Add logging
 
             self.deck_pac.override_file_data(deck_file, new_deck)
 
@@ -147,6 +149,32 @@ class Randomizer():
         for i, next_card in enumerate(deck):
             address = offset + (i * 2)
             new_deck[address:address + 2] = next_card.to_bytes(2, byteorder='little', signed=False)
+    
+    def __shuffle_cpu_decks(self):
+        deck_file_names = self.deck_pac.get_file_names()
+        cpu_deck_names = []
+
+        for name in deck_file_names:
+            if any(keyword in name for keyword in ("rpg", "wcs")) and "_rd" not in name:
+                cpu_deck_names.append(name)
+        
+        cpu_deck_names.remove("rpg001_0_syoki.ydc")
+        
+        decks = []
+        for name in cpu_deck_names:
+            decks.append(self.deck_pac.get_file_bytes(name))
+        
+        random.shuffle(decks)
+
+        for i, name in enumerate(cpu_deck_names):
+            header = 8
+            # size = len(self.deck_pac.get_file_bytes(name))
+            # new_deck = bytearray(size)
+            new_deck = bytearray(len(decks[i]))
+            new_deck[:header] = self.deck_pac.get_file_bytes(name)[:header]
+            new_deck[header:len(decks[i])] = decks[i][header:]
+            self.deck_pac.override_file_data(name, new_deck)
+        
 
     def __load_card_pool(self):
         self.main_pool = []
@@ -180,6 +208,6 @@ class Randomizer():
             raise RuntimeError("deck.pac is missing")
     
     def __export_rom(self, output_path):
-        self.bin2_pac.repack()
+        # self.bin2_pac.repack()
         self.deck_pac.repack()
         self.nds_tool.build(output_path)

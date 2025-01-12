@@ -30,9 +30,10 @@ class InfernityRandomizer(FloatLayout):
 
     seed_input = ObjectProperty(None)
 
-    pack_chk = ObjectProperty(None)
-    start_chk = ObjectProperty(None)
-    sd_chk = ObjectProperty(None)
+    pack_check = ObjectProperty(None)
+    starter_check = ObjectProperty(None)
+    struct_deck_check = ObjectProperty(None)
+    cpu_shuffle_check = ObjectProperty(None)
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -78,9 +79,10 @@ class InfernityRandomizer(FloatLayout):
         else:
             settings["seed"] = int(hashlib.sha256(seed_text.encode()).hexdigest(), 16)
 
-        settings["packs"] = self.pack_chk.active
-        settings["starter_deck"] = self.start_chk.active
-        settings["structure_deck"] = self.sd_chk.active
+        settings["packs"] = self.pack_check.active
+        settings["starter_deck"] = self.starter_check.active
+        settings["structure_deck"] = self.struct_deck_check.active
+        settings["cpu_shuffle"] = self.cpu_shuffle_check.active
         
         randomizer = Randomizer(in_path)
         randomizer.randomize_rom(settings, out_path)

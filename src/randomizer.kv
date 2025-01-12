@@ -2,9 +2,10 @@
 
 <InfernityRandomizer>:
     seed_input: seed
-    pack_chk: chk_1
-    start_chk: chk_2
-    sd_chk: chk_3
+    pack_check: pack_checkbox
+    starter_check: start_checkbox
+    struct_deck_check: sd_checkbox
+    cpu_shuffle_check: cpu_checkbox
 
     canvas.before:
         Rectangle:
@@ -46,7 +47,7 @@
                 width: 250  # Fixed width for labels
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: chk_1
+                id: pack_checkbox
                 disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
@@ -57,7 +58,7 @@
                 width: 250
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: chk_2
+                id: start_checkbox
                 disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
@@ -68,10 +69,21 @@
                 width: 250
                 halign: 'left'  # Align text to the left
             CheckBox:
-                id: chk_3
+                id: sd_checkbox
                 disabled: False if root.file_loaded else True
                 size_hint_x: None
                 active: True
+                width: 20
+            Label:
+                text: "Shuffle CPU decks:"
+                size_hint_x: None
+                width: 250
+                halign: 'left'  # Align text to the left
+            CheckBox:
+                id: cpu_checkbox
+                disabled: False if root.file_loaded else True
+                size_hint_x: None
+                active: False
                 width: 20
         
         BoxLayout:
