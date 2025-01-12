@@ -11,8 +11,8 @@ class PacWrapper():
     def repack(self):
         try:
             # FIXME: DEBUG ONLY
-            with open("debug.bin", 'wb') as file:
-                file.write(self.pac_data.repack_pac())
+            # with open("debug.bin", 'wb') as file:
+            #     file.write(self.pac_data.repack_pac())
             with open(self.path, 'wb') as file:
                 file.write(self.pac_data.repack_pac())
         except PermissionError:

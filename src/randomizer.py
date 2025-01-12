@@ -117,7 +117,7 @@ class Randomizer():
         sd_file_names = [file_name for file_name in deck_file_names if file_name.startswith("sd")]
 
         for deck_file in sd_file_names:
-            print(deck_file)
+            # print(deck_file)
             deck = self.deck_pac.get_file_bytes(deck_file)
 
             # extra_deck_size = 3 if deck_file == "sd_starter10.ydc" else 0
@@ -208,6 +208,6 @@ class Randomizer():
             raise RuntimeError("deck.pac is missing")
     
     def __export_rom(self, output_path):
-        # self.bin2_pac.repack()
+        self.bin2_pac.repack()
         self.deck_pac.repack()
         self.nds_tool.build(output_path)

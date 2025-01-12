@@ -97,30 +97,29 @@ class PacData():
         return [file_names, header]
 
 
-    def __read_file_names(self, header):
-        file_data = header
-
-        line_break_bytes = [0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18]
+    def __read_file_names(self, file_names):
+        line_break_bytes = [0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19]
 
         words = []
         start = 0
 
         # Get file names
-        for i in range(len(file_data)):
-            current_byte = file_data[i]
+        for i in range(len(file_names)):
+            current_byte = file_names[i]
 
-            if current_byte in line_break_bytes:
-                word_bytes = file_data[start:i]
+            if i - start > 1 and current_byte in line_break_bytes:
+                word_bytes = file_names[start:i]
                 words.append(word_bytes)
+                print(word_bytes)
 
                 start = i + 2
 
                 i += 1
         
-        end = len(file_data) - 1
-        while (file_data[end - 3] & 0xFF) == 0x00:
+        end = len(file_names) - 1
+        while (file_names[end - 3] & 0xFF) == 0x00:
             end -= 1
-        words.append(file_data[start:end])
+        words.append(file_names[start:end])
 
         return [w for w in words if "." in w.decode("latin_1")]
 
@@ -144,7 +143,7 @@ class PacData():
         self.file_structure = dict()
 
         for i in range(len(file_names)):
-            name = file_names[i].decode("latin_1")
+            name = file_names[i].decode("latin_1").strip()
             file = all_files[i]
             file.set_file_name(name)
 
